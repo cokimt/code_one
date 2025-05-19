@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>环境数据监测看板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#FF4D4F',
+            info: '#8C8C8C',
+            dark: '#1F2937',
+            'dark-2': '#374151',
+            'light-1': '#F9FAFB',
+            'light-2': '#F3F4F6',
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(22, 93, 255, 0.15);
+      }
+      .stat-card {
+        @apply bg-white rounded-xl p-5 card-shadow card-hover;
+      }
+      .chart-container {
+        @apply bg-white rounded-xl p-5 card-shadow;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #165DFF 0%, #36CFC9 100%);
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-light-2 min-h-screen flex flex-col">
+ 
+  <!-- 主内容区 -->
+  <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- 页面标题 -->
+    <div class="mb-8">
+      <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark mb-2">环境数据监测看板</h1>
+      <p class="text-info">实时监测环境指标，保障环境安全</p>
+    </div>
+    
+    <!-- 时间筛选器 -->
+    <div class="mb-6 bg-white rounded-xl p-4 card-shadow">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div class="flex items-center space-x-4">
+          <button class="px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-primary/90 transition-colors">
+            <i class="fa fa-calendar mr-2"></i>今日
+          </button>
+          <button class="px-4 py-2 bg-light-2 text-dark-2 rounded-lg hover:bg-light-1 transition-colors">本周</button>
+          <button class="px-4 py-2 bg-light-2 text-dark-2 rounded-lg hover:bg-light-1 transition-colors">本月</button>
+          <button class="px-4 py-2 bg-light-2 text-dark-2 rounded-lg hover:bg-light-1 transition-colors">自定义</button>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <input type="text" placeholder="搜索监测点" class="pl-10 pr-4 py-2 border border-light-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-info"></i>
+          </div>
+          
+          <select class="px-4 py-2 border border-light-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all">
+            <option>全部监测点</option>
+            <option>城市中心</option>
+            <option>工业区</option>
+            <option>居民区</option>
+            <option>公园绿地</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 数据概览卡片 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="stat-card">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-info mb-1">空气质量指数</p>
+            <h3 class="text-3xl font-bold text-dark">68</h3>
+            <p class="text-success text-sm flex items-center">
+              <i class="fa fa-arrow-down mr-1"></i> 较昨日下降 5.2%
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <i class="fa fa-cloud text-xl"></i>
+          </div>
+        </div>
+        <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+          <div class="bg-success h-full rounded-full" style="width: 68%"></div>
+        </div>
+        <p class="text-sm text-info mt-2">空气质量：良好</p>
+      </div>
+      
+      <div class="stat-card">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-info mb-1">平均温度</p>
+            <h3 class="text-3xl font-bold text-dark">24.5°C</h3>
+            <p class="text-danger text-sm flex items-center">
+              <i class="fa fa-arrow-up mr-1"></i> 较昨日上升 1.2°C
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+            <i class="fa fa-thermometer-half text-xl"></i>
+          </div>
+        </div>
+        <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+          <div class="bg-warning h-full rounded-full" style="width: 75%"></div>
+        </div>
+        <p class="text-sm text-info mt-2">温度范围：22.1°C - 26.8°C</p>
+      </div>
+      
+      <div class="stat-card">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-info mb-1">湿度</p>
+            <h3 class="text-3xl font-bold text-dark">58%</h3>
+            <p class="text-success text-sm flex items-center">
+              <i class="fa fa-arrow-down mr-1"></i> 较昨日下降 3%
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+            <i class="fa fa-tint text-xl"></i>
+          </div>
+        </div>
+        <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+          <div class="bg-secondary h-full rounded-full" style="width: 58%"></div>
+        </div>
+        <p class="text-sm text-info mt-2">体感舒适</p>
+      </div>
+      
+      <div class="stat-card">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <p class="text-info mb-1">风速</p>
+            <h3 class="text-3xl font-bold text-dark">3.2 m/s</h3>
+            <p class="text-success text-sm flex items-center">
+              <i class="fa fa-arrow-up mr-1"></i> 较昨日上升 0.5 m/s
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <i class="fa fa-wind text-xl"></i>
+          </div>
+        </div>
+        <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+          <div class="bg-primary h-full rounded-full" style="width: 45%"></div>
+        </div>
+        <p class="text-sm text-info mt-2">微风</p>
+      </div>
+    </div>
+    
+    <!-- 主要图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- 空气质量趋势图 -->
+      <div class="chart-container lg:col-span-2">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">空气质量趋势</h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">小时</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">日</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">周</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">月</button>
+          </div>
+        </div>
+        <div class="h-[300px]">
+          <canvas id="airQualityChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 污染成分分布 -->
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">污染成分分布</h3>
+          <button class="text-primary text-sm hover:underline">查看详情</button>
+        </div>
+        <div class="h-[300px] flex items-center justify-center">
+          <canvas id="pollutantChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 更多图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- 温度湿度趋势图 -->
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">温度湿度趋势</h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">今日</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">本周</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">本月</button>
+          </div>
+        </div>
+        <div class="h-[300px]">
+          <canvas id="tempHumidityChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 监测点分布图 -->
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">监测点分布</h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">空气质量</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">温度</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">湿度</button>
+          </div>
+        </div>
+        <div class="h-[300px] bg-light-1 rounded-lg overflow-hidden relative">
+          <img src="https://picsum.photos/id/101/800/400" alt="城市地图" class="w-full h-full object-cover opacity-70">
+          <div class="absolute inset-0">
+            <!-- 监测点标记 -->
+            <div class="absolute top-[30%] left-[25%] group">
+              <div class="w-4 h-4 bg-success rounded-full animate-ping"></div>
+              <div class="w-4 h-4 bg-success rounded-full absolute top-0 left-0"></div>
+              <div class="hidden group-hover:block absolute -top-12 -left-16 bg-white p-2 rounded-lg shadow-lg z-10 text-sm">
+                <p class="font-semibold">监测点 A</p>
+                <p>AQI: 56 (优)</p>
+              </div>
+            </div>
+            
+            <div class="absolute top-[45%] left-[60%] group">
+              <div class="w-4 h-4 bg-warning rounded-full animate-ping"></div>
+              <div class="w-4 h-4 bg-warning rounded-full absolute top-0 left-0"></div>
+              <div class="hidden group-hover:block absolute -top-12 -left-16 bg-white p-2 rounded-lg shadow-lg z-10 text-sm">
+                <p class="font-semibold">监测点 B</p>
+                <p>AQI: 82 (良)</p>
+              </div>
+            </div>
+            
+            <div class="absolute top-[60%] left-[40%] group">
+              <div class="w-4 h-4 bg-danger rounded-full animate-ping"></div>
+              <div class="w-4 h-4 bg-danger rounded-full absolute top-0 left-0"></div>
+              <div class="hidden group-hover:block absolute -top-12 -left-16 bg-white p-2 rounded-lg shadow-lg z-10 text-sm">
+                <p class="font-semibold">监测点 C</p>
+                <p>AQI: 110 (轻度污染)</p>
+              </div>
+            </div>
+            
+            <div class="absolute top-[25%] left-[75%] group">
+              <div class="w-4 h-4 bg-success rounded-full animate-ping"></div>
+              <div class="w-4 h-4 bg-success rounded-full absolute top-0 left-0"></div>
+              <div class="hidden group-hover:block absolute -top-12 -left-16 bg-white p-2 rounded-lg shadow-lg z-10 text-sm">
+                <p class="font-semibold">监测点 D</p>
+                <p>AQI: 45 (优)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 最近预警信息 -->
+    <div class="bg-white rounded-xl p-5 card-shadow mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-semibold text-lg text-dark">最近预警信息</h3>
+        <button class="text-primary text-sm hover:underline">查看全部</button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="border-b border-light-2">
+              <th class="py-3 text-left text-sm font-medium text-dark-2">监测点</th>
+              <th class="py-3 text-left text-sm font-medium text-dark-2">预警类型</th>
+              <th class="py-3 text-left text-sm font-medium text-dark-2">预警级别</th>
+              <th class="py-3 text-left text-sm font-medium text-dark-2">时间</th>
+              <th class="py-3 text-left text-sm font-medium text-dark-2">状态</th>
+              <th class="py-3 text-left text-sm font-medium text-dark-2">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-light-2 hover:bg-light-1/50 transition-colors">
+              <td class="py-3 text-sm text-dark">工业区监测点</td>
+              <td class="py-3 text-sm text-dark">PM2.5浓度超标</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-danger/10 text-danger rounded-full text-xs">严重</span>
+              </td>
+              <td class="py-3 text-sm text-info">2023-06-15 08:30</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">处理中</span>
+              </td>
+              <td class="py-3 text-sm">
+                <button class="text-primary hover:underline">详情</button>
+              </td>
+            </tr>
+            <tr class="border-b border-light-2 hover:bg-light-1/50 transition-colors">
+              <td class="py-3 text-sm text-dark">城市中心监测点</td>
+              <td class="py-3 text-sm text-dark">温度异常</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">警告</span>
+              </td>
+              <td class="py-3 text-sm text-info">2023-06-15 07:45</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-success/10 text-success rounded-full text-xs">已解决</span>
+              </td>
+              <td class="py-3 text-sm">
+                <button class="text-primary hover:underline">详情</button>
+              </td>
+            </tr>
+            <tr class="border-b border-light-2 hover:bg-light-1/50 transition-colors">
+              <td class="py-3 text-sm text-dark">公园监测点</td>
+              <td class="py-3 text-sm text-dark">湿度异常</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-warning/10 text-warning rounded-full text-xs">警告</span>
+              </td>
+              <td class="py-3 text-sm text-info">2023-06-15 06:10</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-success/10 text-success rounded-full text-xs">已解决</span>
+              </td>
+              <td class="py-3 text-sm">
+                <button class="text-primary hover:underline">详情</button>
+              </td>
+            </tr>
+            <tr class="hover:bg-light-1/50 transition-colors">
+              <td class="py-3 text-sm text-dark">居民区监测点</td>
+              <td class="py-3 text-sm text-dark">噪音超标</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-info/10 text-info rounded-full text-xs">提示</span>
+              </td>
+              <td class="py-3 text-sm text-info">2023-06-15 05:20</td>
+              <td class="py-3 text-sm">
+                <span class="px-2 py-1 bg-success/10 text-success rounded-full text-xs">已解决</span>
+              </td>
+              <td class="py-3 text-sm">
+                <button class="text-primary hover:underline">详情</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- 设备状态 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">设备状态</h3>
+          <button class="text-primary text-sm hover:underline">管理设备</button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-sm text-dark">工业区监测站</span>
+              <span class="text-sm text-success">在线</span>
+            </div>
+            <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+              <div class="bg-success h-full rounded-full" style="width: 95%"></div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-sm text-dark">城市中心监测站</span>
+              <span class="text-sm text-success">在线</span>
+            </div>
+            <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+              <div class="bg-success h-full rounded-full" style="width: 98%"></div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-sm text-dark">公园监测站</span>
+              <span class="text-sm text-success">在线</span>
+            </div>
+            <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+              <div class="bg-success h-full rounded-full" style="width: 92%"></div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-sm text-dark">居民区监测站</span>
+              <span class="text-sm text-danger">离线</span>
+            </div>
+            <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+              <div class="bg-danger h-full rounded-full" style="width: 15%"></div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between mb-1">
+              <span class="text-sm text-dark">河流监测站</span>
+              <span class="text-sm text-warning">维护中</span>
+            </div>
+            <div class="w-full bg-light-2 h-2 rounded-full overflow-hidden">
+              <div class="bg-warning h-full rounded-full" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">数据上传情况</h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-full">今日</button>
+            <button class="px-3 py-1 text-xs bg-light-2 text-dark-2 rounded-full">本周</button>
+          </div>
+        </div>
+        <div class="h-[220px]">
+          <canvas id="uploadChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="font-semibold text-lg text-dark">系统通知</h3>
+          <button class="text-primary text-sm hover:underline">全部标为已读</button>
+        </div>
+        <div class="space-y-4 max-h-[220px] overflow-y-auto pr-2">
+          <div class="flex space-x-3 p-3 bg-light-1/50 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+              <i class="fa fa-info"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-dark">系统更新通知</p>
+              <p class="text-xs text-info mt-1">系统将于今晚23:00进行例行维护，预计维护时间1小时</p>
+              <p class="text-xs text-info mt-1">10分钟前</p>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3 p-3 bg-danger/5 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-danger/10 flex items-center justify-center text-danger flex-shrink-0">
+              <i class="fa fa-exclamation-triangle"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-dark">设备异常警告</p>
+              <p class="text-xs text-info mt-1">居民区监测站设备离线，请及时检查</p>
+              <p class="text-xs text-info mt-1">1小时前</p>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3 p-3 bg-light-1/50 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-success/10 flex items-center justify-center text-success flex-shrink-0">
+              <i class="fa fa-check"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-dark">维护完成通知</p>
+              <p class="text-xs text-info mt-1">河流监测站设备维护已完成，现已恢复正常工作</p>
+              <p class="text-xs text-info mt-1">3小时前</p>
+            </div>
+          </div>
+          
+          <div class="flex space-x-3 p-3 bg-light-1/50 rounded-lg">
+            <div class="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-warning flex-shrink-0">
+              <i class="fa fa-bell"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-dark">数据异常通知</p>
+              <p class="text-xs text-info mt-1">工业区监测站PM2.5数据波动较大，请关注</p>
+              <p class="text-xs text-info mt-1">5小时前</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+          
+               
+       
+  </footer>
+
+  <script>
+    // 空气质量趋势图
+    const airQualityCtx = document.getElementById('airQualityChart').getContext('2d');
+    const airQualityChart = new Chart(airQualityCtx, {
+      type: 'line',
+      data: {
+        labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+        datasets: [{
+          label: '空气质量指数(AQI)',
+          data: [55, 60, 70, 75, 68, 65, 62, 68],
+          borderColor: '#165DFF',
+          backgroundColor: 'rgba(22, 93, 255, 0.1)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1F2937',
+            bodyColor: '#1F2937',
+            borderColor: 'rgba(22, 93, 255, 0.2)',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            usePointStyle: true,
+            callbacks: {
+              label: function(context) {
+                return `AQI: ${context.parsed.y}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#8C8C8C'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#8C8C8C',
+              callback: function(value) {
+                if (value <= 50) return value + ' (优)';
+                if (value <= 100) return value + ' (良)';
+                if (value <= 150) return value + ' (轻度污染)';
+                if (value <= 200) return value + ' (中度污染)';
+                return value + ' (重度污染)';
+              }
+            }
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        elements: {
+          point: {
+            radius: 3,
+            hoverRadius: 6,
+            backgroundColor: '#165DFF'
+          }
+        }
+      }
+    });
+    
+    // 污染成分分布图
+    const pollutantCtx = document.getElementById('pollutantChart').getContext('2d');
+    const pollutantChart = new Chart(pollutantCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['PM2.5', 'PM10', 'SO₂', 'NO₂', 'CO', 'O₃'],
+        datasets: [{
+          data: [45, 30, 10, 8, 5, 2],
+          backgroundColor: [
+            '#165DFF',
+            '#36CFC9',
+            '#52C41A',
+            '#FAAD14',
+            '#FF4D4F',
+            '#8C8C8C'
+          ],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              color: '#1F2937',
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1F2937',
+            bodyColor: '#1F2937',
+            borderColor: 'rgba(22, 93, 255, 0.2)',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            usePointStyle: true,
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.parsed}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // 温度湿度趋势图
+    const tempHumidityCtx = document.getElementById('tempHumidityChart').getContext('2d');
+    const tempHumidityChart = new Chart(tempHumidityCtx, {
+      type: 'line',
+      data: {
+        labels: ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'],
+        datasets: [
+          {
+            label: '温度 (°C)',
+            data: [20.1, 19.5, 20.3, 22.8, 24.5, 25.8, 25.2, 23.8],
+            borderColor: '#FAAD14',
+            backgroundColor: 'rgba(250, 173, 20, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y'
+          },
+          {
+            label: '湿度 (%)',
+            data: [65, 68, 70, 65, 58, 55, 57, 60],
+            borderColor: '#36CFC9',
+            backgroundColor: 'rgba(54, 207, 201, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1F2937',
+            bodyColor: '#1F2937',
+            borderColor: 'rgba(22, 93, 255, 0.2)',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            usePointStyle: true
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#8C8C8C'
+            }
+          },
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            beginAtZero: false,
+            min: 10,
+            max: 40,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#8C8C8C',
+              callback: function(value) {
+                return value + '°C';
+              }
+            },
+            title: {
+              display: true,
+              text: '温度 (°C)',
+              color: '#FAAD14'
+            }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            beginAtZero: false,
+            min: 0,
+            max: 100,
+            grid: {
+              drawOnChartArea: false
+            },
+            ticks: {
+              color: '#8C8C8C',
+              callback: function(value) {
+                return value + '%';
+              }
+            },
+            title: {
+              display: true,
+              text: '湿度 (%)',
+              color: '#36CFC9'
+            }
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        elements: {
+          point: {
+            radius: 3,
+            hoverRadius: 6
+          }
+        }
+      }
+    });
+    
+    // 数据上传情况图
+    const uploadCtx = document.getElementById('uploadChart').getContext('2d');
+    const uploadChart = new Chart(uploadCtx, {
+      type: 'bar',
+      data: {
+        labels: ['监测点A', '监测点B', '监测点C', '监测点D', '监测点E', '监测点F'],
+        datasets: [{
+          label: '今日上传次数',
+          data: [48, 56, 42, 38, 50, 45],
+          backgroundColor: '#165DFF',
+          borderRadius: 4,
+          barThickness: 12
+        }, {
+          label: '昨日上传次数',
+          data: [42, 48, 39, 35, 45, 40],
+          backgroundColor: 'rgba(22, 93, 255, 0.3)',
+          borderRadius: 4,
+          barThickness: 12
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            titleColor: '#1F2937',
+            bodyColor: '#1F2937',
+            borderColor: 'rgba(22, 93, 255, 0.2)',
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            usePointStyle: true
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: '#8C8C8C'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              color: '#8C8C8C',
+              stepSize: 10
+            }
+          }
+        }
+      }
+    });
+    
+    // 页面滚动时导航栏样式变化
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 10) {
+        header.classList.add('shadow-md');
+        header.classList.remove('shadow-sm');
+      } else {
+        header.classList.remove('shadow-md');
+        header.classList.add('shadow-sm');
+      }
+    });
+  </script>
+</body>
+</html>
+    
